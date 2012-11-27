@@ -32,12 +32,12 @@ dbname = db_type + testOut + sqliteSuffix
 print "db is " + dbname + "\n"
 print "about to try out the run for " + testFile + "\n"
 
-#db = Database(dbname, None, False)
-#db.create()
-#print "serialized db is " + db.__str__() + "\n"
-#
-#gtfs = GTFS(testFile)
-#gtfs.load(db)
+db = Database(dbname, None, False)
+db.create()
+print "serialized db is " + db.__str__() + "\n"
+
+gtfs = GTFS(testFile)
+gtfs.load(db)
 
 
 '''
