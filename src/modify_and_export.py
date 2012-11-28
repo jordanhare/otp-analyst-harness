@@ -16,8 +16,6 @@ import csv
 import os
 # import sys
 
-basedir = "/Users/hare/projects/otp-data/"
-
 #
 # specify the following arguments
 # 1. the database

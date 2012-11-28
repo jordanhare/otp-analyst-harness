@@ -10,9 +10,9 @@ import datetime
 import os
 
 
-'''
-standalone function to create a sqlite database for each affected file
-'''
+#
+# standalone function to create a sqlite database for each affected file
+#
 def loadToDatabase(writedir, name, gtfsfile) :
     db_type = "sqlite:///"
     suffix = ".sqlite"
@@ -29,9 +29,9 @@ def loadToDatabase(writedir, name, gtfsfile) :
 
 
 
-'''
-Define data structures for each GTFS feed
-'''
+#
+# Define data structures for each GTFS feed
+#
 def setupData(feeds):
 
     subway = {"url" : "http://mta.info/developers/data/nyct/subway/google_transit.zip",
@@ -82,10 +82,10 @@ def setupData(feeds):
 
 
 
-'''
-Write each GTFS feed to a file
-if specified above, write to a sql database
-'''
+#
+# Write each GTFS feed to a file
+# if specified above, write to a sql database
+#
 #current datetime
 nowdir = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "/"
 basedir = "/Users/hare/projects/otp-data/"
