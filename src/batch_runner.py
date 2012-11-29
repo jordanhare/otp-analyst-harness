@@ -4,16 +4,6 @@ Created on Nov 27, 2012
 @author: hare
 '''
 
-'''
-items for the intermediate script:
-
-load SQL file for sqlite and run this against the databases created by collate_data
-
-export "modified" out of sqlite into GTFS fileset and zip up
-
-'''
-
-
 
 
 '''

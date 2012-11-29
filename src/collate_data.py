@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 Created on Nov 27, 2012
 
@@ -36,48 +38,48 @@ def setupData(feeds):
 
     subway = {"url" : "http://mta.info/developers/data/nyct/subway/google_transit.zip",
               "name" : "subway",
-              "file" : "subway_gtfs.zip" }
+              "file" : "subway.zip" }
     feeds.append(subway)
     
     bronx = {"url" : "http://mta.info/developers/data/nyct/bus/google_transit_bronx.zip",
              "name" : "bronx",
-             "file" : "bronx_bus_gtfs.zip" }
+             "file" : "bronx_bus.zip" }
     feeds.append(bronx)
     
     brooklyn = {"url" : "http://mta.info/developers/data/nyct/bus/google_transit_brooklyn.zip",
                 "name" : "brooklyn",
-                "file" : "brooklyn_bus_gtfs.zip" }
+                "file" : "brooklyn_bus.zip" }
     feeds.append(brooklyn)
     
     manhattan = {"url" : "http://mta.info/developers/data/nyct/bus/google_transit_manhattan.zip",
                  "name" : "manhattan",
-                 "file" : "manhattan_bus_gtfs.zip" }
+                 "file" : "manhattan_bus.zip" }
     feeds.append(manhattan)
     
     queens = {"url" : "http://mta.info/developers/data/nyct/bus/google_transit_queens.zip",
               "name" : "queens",
-              "file" : "queens_bus_gtfs.zip" }
+              "file" : "queens_bus.zip" }
     feeds.append(queens)
     
     staten_island = {"url" : "http://mta.info/developers/data/nyct/bus/google_transit_staten_island.zip",
                      "name" : "staten_island",
-                     "file" : "staten_island_bus_gtfs.zip" }
+                     "file" : "staten_island_bus.zip" }
     feeds.append(staten_island)
 
     busco = {"url" : "http://mta.info/developers/data/busco/google_transit.zip",
              "name" : "busco",
-             "file" : "busco_gtfs.zip" }
+             "file" : "busco.zip" }
     feeds.append(busco)
     
     lirr = {"url" : "http://mta.info/developers/data/lirr/google_transit.zip",
             "name" : "lirr",
-            "file" : "lirr_gtfs.zip",
+            "file" : "lirr.zip",
             "sqlite" : True }
     feeds.append(lirr)
     
     mnr = {"url" : "http://mta.info/developers/data/mnr/google_transit.zip",
            "name" : "mnr",
-           "file" : "mnr_gtfs.zip" }
+           "file" : "mnr.zip" }
     feeds.append(mnr)
 
 
