@@ -16,18 +16,23 @@ import sys
 import os
 
 match_pattern = "/*.zip"
-ami_id = "ami-8d75f5e4"
+#ami_id = "ami-8d75f5e4"
+ami_id = "ami-d93cbcb0"
 
 base_string = """#cloud-config
  
 runcmd:
  - mount /dev/sdf1 /mnt/ebs 
+ - /usr/bin/yum -y install mutt
  - wget -O /home/ec2-user/s3cp.zip http://beaconhill.com/downloader/get.htm?key=s3cp.zip
  - mkdir /home/ec2-user/s3cp
  - /usr/bin/unzip /home/ec2-user/s3cp.zip -d /home/ec2-user/s3cp
  - mkdir /home/ec2-user/.s3cp
  - export HOME=/home/ec2-user
 """
+
+access_key_str = "AWS_ACCESS_KEY_ID"
+secret_key_str = "AWS_SECRET_ACCESS_KEY"
 
 newline = "\n"
 homedir = "/home/ec2-user/"
@@ -68,13 +73,27 @@ def pullFromS3(bucket, file_set) :
         return_str += s3copy_string + "s3://" + bucket + "/" + f_short + " " + homedir + bucket + "/" + f_short + ".zip" + newline
     return return_str
 
+def generateGraph(bucket) :
+    return_str = ""
+    return_str += " - export DIR1=" + bucket + newline
+    return_str += " - mkdir -p /mnt/ebs/otp/" + bucket + "/graphs" + newline
+    return_str += " - /usr/bin/java -Xmx2048m -Ddir1=$DIR1 -jar /mnt/ebs/otp/lib/graph-builder.jar /mnt/ebs/otp/graph-builder.xml" + newline
+    return return_str
+    
+def writeGraphToS3(bucket) :
+    return_str = ""
+    return_str += " - /usr/bin/s3put -b " + bucket + " -p /mnt/ebs/otp/" + bucket + "/graphs Graph.obj"
+    return return_str
+
 def setAwsPerms() :
-    accessKey = os.environ.get("AWS_ACCESS_KEY_ID")
-    secretKey = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    accessKey = os.environ.get(access_key_str)
+    secretKey = os.environ.get(secret_key_str)
     properties = ' >> /home/ec2-user/.s3cp/s3cp.properties'
     return_str = ''
     return_str += ' - echo "s3.accessKey=' + accessKey + '"' + properties + newline
+    return_str += ' - export ' + access_key_str + "=" + accessKey + newline
     return_str += ' - echo "s3.secretKey=' + secretKey + '"' + properties + newline
+    return_str += ' - export ' + secret_key_str + "=" + secretKey + newline
     return return_str
 
 parser = argparse.ArgumentParser(description='specify two directories of GTFS. for each directory, uploaded to S3, create graph.')
@@ -96,7 +115,7 @@ dir2_fileset = getFileSet(dir2)
 #
 s3_conn = S3Connection()
 uploadToS3(dir1_bucket, dir1_fileset, s3_conn)
-uploadToS3(dir2_bucket, dir2_fileset, s3_conn)
+#uploadToS3(dir2_bucket, dir2_fileset, s3_conn)
 
 # dynamically construct user data script 
 #
@@ -104,7 +123,12 @@ user_string = ""
 user_string += base_string 
 user_string += setAwsPerms()
 user_string += pullFromS3(dir1_bucket, dir1_fileset)
-user_string += pullFromS3(dir2_bucket, dir2_fileset)
+#user_string += pullFromS3(dir2_bucket, dir2_fileset)
+
+user_string += generateGraph(dir1_bucket)
+user_string += writeGraphToS3(dir1_bucket)
+#user_string += generateGraph(dir2_bucket)
+#user_string += writeGraphToS3(dir2_bucket)
 
 print "user data is: " + user_string
 
