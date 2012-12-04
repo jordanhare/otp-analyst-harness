@@ -74,11 +74,11 @@ if (args.cloneflag == True) :
 # 
 # using the target database, apply the sql
 #
-sql_conn = sqlite3.connect(working_db)
+s3_conn = sqlite3.connect(working_db)
 sqlfile = open(args.sqlfile, 'r').read()
-sc = sql_conn.cursor()
+sc = s3_conn.cursor()
 sc.executescript(sqlfile)
-sql_conn.commit()
+s3_conn.commit()
 sc.close()
 
 #
@@ -92,7 +92,7 @@ if (args.exportflag == True) :
     os.remove(db_modify_to_delete)
     os.mkdir(storedir)
 
-    dc = sql_conn.cursor()
+    dc = s3_conn.cursor()
     dc.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = [x[0] for x in dc.fetchall()]
 
@@ -112,4 +112,4 @@ if (args.exportflag == True) :
 #
 # program is complete; shut down connection
 #
-sql_conn.close()
+s3_conn.close()

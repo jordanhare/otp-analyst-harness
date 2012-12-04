@@ -8,13 +8,30 @@ Created on Nov 27, 2012
 
 from boto.s3.connection import S3Connection
 from boto.ec2.connection import EC2Connection
-
 from boto.s3.key import Key
-from boto.ec2.blockdevicemapping import BlockDeviceMapping, BlockDeviceType
 
 import argparse
 import glob
 import sys
+import os
+
+match_pattern = "/*.zip"
+ami_id = "ami-8d75f5e4"
+
+base_string = """#cloud-config
+ 
+runcmd:
+ - mount /dev/sdf1 /mnt/ebs 
+ - wget -O /home/ec2-user/s3cp.zip http://beaconhill.com/downloader/get.htm?key=s3cp.zip
+ - mkdir /home/ec2-user/s3cp
+ - /usr/bin/unzip /home/ec2-user/s3cp.zip -d /home/ec2-user/s3cp
+ - mkdir /home/ec2-user/.s3cp
+ - export HOME=/home/ec2-user
+"""
+
+newline = "\n"
+homedir = "/home/ec2-user/"
+s3copy_string = " - /usr/bin/java -jar /home/ec2-user/s3cp/s3cp-cmdline-0.1.11.jar "
 
 def trimSlash(dirname) :
     if (dirname[-1:] == "/") :
@@ -22,24 +39,43 @@ def trimSlash(dirname) :
     else :
         return dirname
 
-def uploadToS3(dirname, sql_conn) :
-    file_set = glob.glob(dirname + match_pattern)
-    bucket_name = dirname.split("/")[-1]
-    bucket = sql_conn.create_bucket(bucket_name)
-    bucket.set_acl('public-read')
-    print "dirname " + dirname + " stored into bucket " + bucket_name 
-    for file_entry in file_set :
-        file_short = file_entry.split("/")[-1].split(".")[0]
-        key = Key(bucket)
-        key.key = file_short
-        print "storing as key: " + file_short
-        key.set_contents_from_filename(file_entry)        
+def getBucketName(dirname) :
+    return dirname.split("/")[-1]
+
+def getFileSet (dirname) :
+    return glob.glob(dirname + match_pattern)
+
+def getFileName (longFileName) :
+    return longFileName.split("/")[-1].split(".")[0]
+
+def uploadToS3(bucket, file_set, s3_conn) :
+    b = s3_conn.create_bucket(bucket)
+    b.set_acl('public-read') 
+    for f in file_set :
+        print "f " + f + " stored into b " + bucket
+        f_short = getFileName(f)
+        key = Key(b)
+        key.key = f_short
+        print "storing as key: " + f_short
+        key.set_contents_from_filename(f)        
         key.set_acl('public-read')
 
-match_pattern = "/*.zip"
-ami_id = "ami-8d75f5e4"
+def pullFromS3(bucket, file_set) :
+    return_str = ""
+    return_str += " - mkdir /home/ec2-user/" + bucket + newline
+    for f in file_set :
+        f_short = getFileName(f)        
+        return_str += s3copy_string + "s3://" + bucket + "/" + f_short + " " + homedir + bucket + "/" + f_short + ".zip" + newline
+    return return_str
 
-graph_gen_script = open("/Users/hare/eclipse_workspace/batch-analyst-runner/src/cloud-init/base_proof2.sh")
+def setAwsPerms() :
+    accessKey = os.environ.get("AWS_ACCESS_KEY_ID")
+    secretKey = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    properties = ' >> /home/ec2-user/.s3cp/s3cp.properties'
+    return_str = ''
+    return_str += ' - echo "s3.accessKey=' + accessKey + '"' + properties + newline
+    return_str += ' - echo "s3.secretKey=' + secretKey + '"' + properties + newline
+    return return_str
 
 parser = argparse.ArgumentParser(description='specify two directories of GTFS. for each directory, uploaded to S3, create graph.')
 parser.add_argument('-dir1', metavar='directory_1', dest='directory_1', help='the first directory to load')
@@ -50,73 +86,42 @@ args = parser.parse_args()
 dir1 = trimSlash(args.directory_1)
 dir2 = trimSlash(args.directory_2)
 
-#
-# establish connection to S3
-#
-sql_conn = S3Connection()
+dir1_bucket = getBucketName(dir1)
+dir1_fileset = getFileSet(dir1)
 
+dir2_bucket = getBucketName(dir2)
+dir2_fileset = getFileSet(dir2)
 
-#
 # upload files to S3
 #
-uploadToS3(dir1, sql_conn)
-uploadToS3(dir2, sql_conn)
+s3_conn = S3Connection()
+uploadToS3(dir1_bucket, dir1_fileset, s3_conn)
+uploadToS3(dir2_bucket, dir2_fileset, s3_conn)
 
-#sys.exit()
+# dynamically construct user data script 
+#
+user_string = "" 
+user_string += base_string 
+user_string += setAwsPerms()
+user_string += pullFromS3(dir1_bucket, dir1_fileset)
+user_string += pullFromS3(dir2_bucket, dir2_fileset)
 
-# kick off graph-builder instances
+print "user data is: " + user_string
+
+#
+# start up instance
+# pull down S3 data into filesystem
+# run graph builder
+# post graph object into s3
+# shutdown instance
+#
+
 ec2_conn = EC2Connection()
-
-#instance_list = ["i-63a4a31c"]
-#
-#reservation_list = ec2_conn.get_all_instances(instance_list)
-#
-#reserve = reservation_list[0]
-#
-#instances = reserve.instances
-#
-#instance = instances[0]
-#
-#instance.start()
-
-#print "class is:" + str(reservation_list[0].__class__)
-#print "class is:" + str(instances[0].__class__)
-#sys.exit()
-
-shared_drive = BlockDeviceType(connection=ec2_conn, volume_id="vol-fad4dd86")
-
-block_device_mapping = BlockDeviceMapping()
-block_device_mapping["/dev/sdf"] = shared_drive
-
-#block_device_mapping = {  : "vol-fad4dd86"}
-
-
-#ec2_conn.run_instances(image_id=ami_id, 
-#                       instance_type="t1.micro", 
-#                       security_groups=["full-access"], 
-#                       key_name="otp-shadow", 
-#                       placement="us-east-1d"
-#                       block_device_map=block_device_mapping 
-#                       user_data=graph_gen_script.read()
-#                       )
-
 
 ec2_conn.request_spot_instances(price="0.04", 
                                 image_id=ami_id, 
                                 count=1, 
                                 key_name="otp-shadow", 
                                 security_groups=["quick-start-1"], 
-                                user_data=graph_gen_script.read(), 
+                                user_data=user_string, 
                                 instance_type="m1.large")
-
-## unused
-#type, valid_from, 
-#valid_until, launch_group, 
-#availability_zone_group,  addressing_type, 
-#placement, kernel_id, 
-#ramdisk_id, monitoring_enabled, 
-#subnet_id, placement_group, 
-#block_device_map, instance_profile_arn, 
-#instance_profile_name, security_group_ids, ebs_optimized 
-
-
