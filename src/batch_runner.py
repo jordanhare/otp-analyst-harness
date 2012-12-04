@@ -16,18 +16,12 @@ import sys
 import os
 
 match_pattern = "/*.zip"
-#ami_id = "ami-8d75f5e4"
-ami_id = "ami-d93cbcb0"
+ami_id = "ami-a33ebeca"
 
 base_string = """#cloud-config
  
 runcmd:
  - mount /dev/sdf1 /mnt/ebs 
- - /usr/bin/yum -y install mutt
- - wget -O /home/ec2-user/s3cp.zip http://beaconhill.com/downloader/get.htm?key=s3cp.zip
- - mkdir /home/ec2-user/s3cp
- - /usr/bin/unzip /home/ec2-user/s3cp.zip -d /home/ec2-user/s3cp
- - mkdir /home/ec2-user/.s3cp
  - export HOME=/home/ec2-user
 """
 
@@ -82,17 +76,19 @@ def generateGraph(bucket) :
     
 def writeGraphToS3(bucket) :
     return_str = ""
-    return_str += " - /usr/bin/s3put -b " + bucket + " -p /mnt/ebs/otp/" + bucket + "/graphs Graph.obj"
+    return_str += " - /usr/bin/s3put -b " + bucket + " -p /mnt/ebs/otp/" + bucket + "/graphs /mnt/ebs/otp/" + bucket + "/graphs/Graph.obj" + newline
+    return return_str
+
+def emailLogAndQuit() :
+    return_str = ""
+    return_str += " - echo 'run now finished' | /usr/bin/mutt -s 'run_batch complete' -a /var/log/cloud-init.log -- jordan.hare@gmail.com" + newline
     return return_str
 
 def setAwsPerms() :
     accessKey = os.environ.get(access_key_str)
     secretKey = os.environ.get(secret_key_str)
-    properties = ' >> /home/ec2-user/.s3cp/s3cp.properties'
     return_str = ''
-    return_str += ' - echo "s3.accessKey=' + accessKey + '"' + properties + newline
     return_str += ' - export ' + access_key_str + "=" + accessKey + newline
-    return_str += ' - echo "s3.secretKey=' + secretKey + '"' + properties + newline
     return_str += ' - export ' + secret_key_str + "=" + secretKey + newline
     return return_str
 
@@ -129,6 +125,8 @@ user_string += generateGraph(dir1_bucket)
 user_string += writeGraphToS3(dir1_bucket)
 #user_string += generateGraph(dir2_bucket)
 #user_string += writeGraphToS3(dir2_bucket)
+
+user_string += emailLogAndQuit()
 
 print "user data is: " + user_string
 

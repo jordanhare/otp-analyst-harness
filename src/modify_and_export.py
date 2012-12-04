@@ -98,7 +98,7 @@ if (args.exportflag == True) :
 
     for table in tables :
         dc.execute("select * from " + table + ";")
-        csv_name = storedir + "/" + table + ".csv"
+        csv_name = storedir + "/" + table + ".txt"
         csv_writer = csv.writer(open(csv_name, "wt"))
         csv_writer.writerow([i[0] for i in dc.description]) # write headers
         csv_writer.writerows(dc)
