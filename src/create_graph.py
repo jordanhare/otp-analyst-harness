@@ -11,6 +11,7 @@ from boto.ec2.connection import EC2Connection
 
 import argparse
 import utilities
+import glob
 
 ami_id = "ami-47f2712e"
 
@@ -24,10 +25,10 @@ dir1 = utilities.trimSlash(args.directory_1)
 dir2 = utilities.trimSlash(args.directory_2)
 
 dir1_bucket = utilities.getBucketName(dir1)
-dir1_fileset = utilities.getFileSet(dir1)
+dir1_fileset = glob.glob(dir1 + utilities.zip_pattern)
 
 dir2_bucket = utilities.getBucketName(dir2)
-dir2_fileset = utilities.getFileSet(dir2)
+dir2_fileset = glob.glob(dir2 + utilities.zip_pattern)
 
 # upload files to S3
 #

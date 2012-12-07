@@ -7,7 +7,6 @@ NOTE: not executable
 '''
 
 from boto.s3.key import Key
-import glob
 import os
 
 access_key_str = "AWS_ACCESS_KEY_ID"
@@ -16,7 +15,8 @@ secret_key_str = "AWS_SECRET_ACCESS_KEY"
 s3copy_string = " - /usr/bin/java -jar /home/ec2-user/s3cp/s3cp-cmdline-0.1.11.jar "
 homedir = "/home/ec2-user/"
 
-match_pattern = "/*.zip"
+zip_pattern = "/*.zip"
+all_pattern = "/*.*"
 
 newline = "\n"
 
@@ -43,9 +43,6 @@ def setAwsPerms() :
 
 def getBucketName(dirname) :
     return dirname.split("/")[-1]
-
-def getFileSet (dirname) :
-    return glob.glob(dirname + match_pattern)
 
 def generateGraph(bucket) :
     return_str = ""
@@ -95,8 +92,6 @@ def writeAnalystImageToS3(bucket) :
     return_str = ""
     return_str += " - /usr/bin/s3put -b " + bucket + " -p /mnt/ebs/otp/" + bucket + "/images /mnt/ebs/otp/" + bucket + "/images/output.tiff" + newline
     return return_str
-
-
 
 def getFileName (longFileName) :
     return longFileName.split("/")[-1].split(".")[0]

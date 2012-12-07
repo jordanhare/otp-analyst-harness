@@ -7,29 +7,8 @@ Created on Nov 27, 2012
 '''
 
 import requests
-from gtfsdb import Database, GTFS
 import datetime
 import os
-
-
-#
-# standalone function to create a sqlite database for each affected file
-#
-def loadToDatabase(writedir, name, gtfsfile) :
-    db_type = "sqlite:///"
-    suffix = ".sqlite"
-    
-    dbname = db_type + writedir + name + suffix
-    
-    print "storing into database as " + dbname
-    
-    db = Database(dbname, None, False)
-    db.create()
-    
-    gtfs = GTFS(gtfsfile)
-    gtfs.load(db)
-
-
 
 #
 # Define data structures for each GTFS feed
@@ -73,8 +52,7 @@ def setupData(feeds):
     
     lirr = {"url" : "http://mta.info/developers/data/lirr/google_transit.zip",
             "name" : "lirr",
-            "file" : "lirr.zip",
-            "sqlite" : True }
+            "file" : "lirr.zip" }
     feeds.append(lirr)
     
     mnr = {"url" : "http://mta.info/developers/data/mnr/google_transit.zip",
@@ -83,33 +61,20 @@ def setupData(feeds):
     feeds.append(mnr)
 
 
-
 #
-# Write each GTFS feed to a file
-# if specified above, write to a sql database
+# Write each GTFS feed to a file, in a directory based on current datetime
 #
-#current datetime
 nowdir = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "/"
 basedir = "/Users/hare/projects/otp-data/"
 writedir = basedir + nowdir
 
 os.mkdir(writedir)
-
-#
-# Setup data for processing
-#
 feeds = []
 setupData(feeds)
 
-#
-# load in all of the affected GTFS files, creating sqlite databases if necessary 
-#
 for feed in feeds:
     filename = writedir + feed["file"]
     print "downloading file for " + feed["name"] + " and storing as " + filename
     r = requests.get(feed["url"])
     with open(filename, "wb") as code:
         code.write(r.content)
-    if ("sqlite" in feed):
-        loadToDatabase(writedir, feed["name"], filename)
-

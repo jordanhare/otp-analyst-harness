@@ -36,6 +36,8 @@ else :
     
 user_string = ""
 user_string += utilities.base_string
+user_string += utilities.setAwsPerms()
+
 user_string += utilities.pullFromS3(dir1_bucket, ["Graph.obj"], useOriginalFiles=True)
 
 user_string += utilities.generateAnalystImage(dir1_bucket)
