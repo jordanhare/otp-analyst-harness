@@ -13,11 +13,14 @@ import argparse
 #import os
 import utilities
 
-ami_id = "ami-b1fc7fd8"
+ami_id = "ami-0a7aeb63"
 
 parser = argparse.ArgumentParser(description='specify two directories of GTFS. for each directory, uploaded to S3, create graph.')
 parser.add_argument('-dir1', metavar='directory_1', dest='directory_1', help='the first directory to load')
 parser.add_argument('-dir2', metavar='directory_2', dest='directory_2', help='the second directory to load')
+parser.add_argument('-date', metavar='date', dest='date', help='the date')
+parser.add_argument('-time', metavar='time', dest='time', help='the time')
+parser.add_argument('-origin', metavar='origin', dest='origin', help='origin file')
 
 args = parser.parse_args()
 
@@ -40,7 +43,21 @@ user_string += utilities.setAwsPerms()
 
 user_string += utilities.pullFromS3(dir1_bucket, ["Graph.obj"], useOriginalFiles=True)
 
-user_string += utilities.generateAnalystImage(dir1_bucket)
+date = args.date
+time = args.time
+origin = args.origin
+
+#date = "2013-02-10"
+#time = "15:00"
+
+# keep these as defaults for now
+searchCutOff = "2400"
+thresholdAccum = "2400"
+thresholdAgg="2400"
+maxWalkDist="700"
+
+
+user_string += utilities.generateAnalystImage(dir1_bucket, date, time, searchCutOff, thresholdAccum, thresholdAgg, maxWalkDist, origin)
 user_string += utilities.writeAnalystImageToS3(dir1_bucket)
 
 #user_string += utilities.pullFromS3(dir2_bucket, ["Graph.obj"])

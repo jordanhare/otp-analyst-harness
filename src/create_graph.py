@@ -13,7 +13,7 @@ import argparse
 import utilities
 import glob
 
-ami_id = "ami-47f2712e"
+ami_id = "ami-9533a4fc"
 
 parser = argparse.ArgumentParser(description='specify two directories of GTFS. for each directory, uploaded to S3, create graph.')
 parser.add_argument('-dir1', metavar='directory_1', dest='directory_1', help='the first directory to load')
