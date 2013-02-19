@@ -13,22 +13,22 @@ import argparse
 import utilities
 import glob
 
-ami_id = "ami-9533a4fc"
+ami_id = "ami-4ef16127"
 
 parser = argparse.ArgumentParser(description='specify two directories of GTFS. for each directory, uploaded to S3, create graph.')
-parser.add_argument('-dir1', metavar='directory_1', dest='directory_1', help='the first directory to load')
-parser.add_argument('-dir2', metavar='directory_2', dest='directory_2', help='the second directory to load')
+parser.add_argument('-dir', metavar='directory_1', dest='directory_1', help='the first directory to load')
+# parser.add_argument('-dir2', metavar='directory_2', dest='directory_2', help='the second directory to load')
 
 args = parser.parse_args()
 
 dir1 = utilities.trimSlash(args.directory_1)
-dir2 = utilities.trimSlash(args.directory_2)
+#dir2 = utilities.trimSlash(args.directory_2)
 
 dir1_bucket = utilities.getBucketName(dir1)
 dir1_fileset = glob.glob(dir1 + utilities.zip_pattern)
 
-dir2_bucket = utilities.getBucketName(dir2)
-dir2_fileset = glob.glob(dir2 + utilities.zip_pattern)
+#dir2_bucket = utilities.getBucketName(dir2)
+#dir2_fileset = glob.glob(dir2 + utilities.zip_pattern)
 
 # upload files to S3
 #

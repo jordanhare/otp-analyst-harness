@@ -59,19 +59,19 @@ def loadToDatabase(writedir, name, gtfsfile) :
 #
 
 parser = argparse.ArgumentParser(description='Batch load sql files for GTFS modification.')
-parser.add_argument('-g', metavar='database', dest='database', help='the GTFS file that will be modified')
+parser.add_argument('-g', metavar='gtfsfile', dest='gtfsfile', help='the GTFS file that will be modified')
 parser.add_argument('-f', metavar='sqlfile', dest='sqlfile', help='the sql to apply')
 parser.add_argument('-c', metavar='cloneflag', dest='cloneflag', default=True, help='toggle cloned output (default: True)')
 parser.add_argument('-z', metavar='exportflag', dest='exportflag', default=True, help='toggle export (default: True)')
 
 args = parser.parse_args()
-print "gtfs target file is: " + args.database
+print "gtfs target file is: " + args.gtfsfile
 print "sqlfile is: " + args.sqlfile
 print "exportflag is: " + str(args.exportflag)
 print "cloneflag is: " + str(args.cloneflag)
 
 # clean name of the file
-gtfs_name = args.database
+gtfs_name = args.gtfsfile   
 gtfs_shortname = gtfs_name.split("/")[-1].split(".")[0]
 gtfs_basename = gtfs_name.split(".")[0]
 gtfs_dir = os.path.dirname(gtfs_name)
@@ -95,7 +95,7 @@ db_short_name = db_full_name.split(".")[0]
 db_directory = gtfs_dir
 db_modify_directory = gtfs_dir + "_modify"
 
-working_db = args.database
+working_db = args.gtfsfile
 
 #
 # clone if necessary

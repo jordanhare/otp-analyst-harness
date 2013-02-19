@@ -51,7 +51,7 @@ def generateGraph(bucket) :
     return_str += " - /usr/bin/java -Xmx4096m -Ddir1=$DIR1 -jar /mnt/ebs/OpenTripPlanner/opentripplanner-graph-builder/target/graph-builder.jar /mnt/ebs/otp/graph-builder.xml" + newline
     return return_str
 
-def generateAnalystImage(bucket, date, time, searchCutOff, thresholdAccum, thresholdAgg, maxWalkDist, origin) :
+def generateAnalystImage(bucket, date, time, searchCutOff, thresholdAccum, thresholdAgg, maxWalkDist, origin, tiffname) :
     return_str = ""
     return_str += " - export DIR1=" + bucket + newline
     return_str += " - export DATE=" + date + newline
@@ -61,10 +61,15 @@ def generateAnalystImage(bucket, date, time, searchCutOff, thresholdAccum, thres
     return_str += " - export THRESHOLDAGG=" + thresholdAgg + newline
     return_str += " - export MAXWALKDIST=" + maxWalkDist + newline
     return_str += " - export ORIGIN=" + origin + newline
+    return_str += " - export TIFFNAME=" + tiffname + newline
     return_str += " - mkdir /home/ec2-user/" + bucket + "/nyc" + newline
     return_str += " - mv /home/ec2-user/" + bucket + "/Graph.obj /home/ec2-user/" + bucket + "/nyc/Graph.obj" + newline
     return_str += " - mkdir -p /mnt/ebs/otp/" + bucket + "/images" + newline
-    return_str += " - /usr/bin/java -Xmx4096m -Ddir1=$DIR1 -Ddate=$DATE -Dtime=$TIME -DsearchCutOff=$SEARCHCUTOFF -DthresholdAccum=$THRESHOLDACCUM -DthresholdAgg=$THRESHOLDAGG -DmaxWalkDist=$MAXWALKDIST -Dorigin=$ORIGIN -jar /mnt/ebs/OpenTripPlanner/opentripplanner-analyst/target/otp-analyst.jar /mnt/ebs/OpenTripPlanner/batchAnalystConfig.xml" + newline
+    return_str += " - /usr/bin/java -Xmx4096m " + \
+        "-Ddir1=$DIR1 -Ddate=$DATE -Dtime=$TIME -DsearchCutOff=$SEARCHCUTOFF " + \
+        "-DthresholdAccum=$THRESHOLDACCUM -DthresholdAgg=$THRESHOLDAGG " + \
+        "-DmaxWalkDist=$MAXWALKDIST -Dorigin=$ORIGIN -Dtiffname=$TIFFNAME " + \
+        "-jar /mnt/ebs/OpenTripPlanner/opentripplanner-analyst/target/otp-analyst.jar /mnt/ebs/OpenTripPlanner/batchAnalystConfig.xml" + newline
     return return_str
 
 def pullFromS3(bucket, file_set, useOriginalFiles=False) :
