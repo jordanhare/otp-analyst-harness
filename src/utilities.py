@@ -47,8 +47,9 @@ def getBucketName(dirname) :
 def generateGraph(bucket) :
     return_str = ""
     return_str += " - export DIR1=" + bucket + newline
-    return_str += " - mkdir -p /mnt/ebs/otp/" + bucket + "/graphs" + newline
-    return_str += " - /usr/bin/java -Xmx4096m -Ddir1=$DIR1 -jar /mnt/ebs/OpenTripPlanner/opentripplanner-graph-builder/target/graph-builder.jar /mnt/ebs/otp/graph-builder.xml" + newline
+    return_str += " - /usr/bin/java -Xmx4096m -Ddir1=$DIR1 -jar " + \
+        "/mnt/ebs/OpenTripPlanner/opentripplanner-graph-builder/target/graph-builder.jar " + \
+        "/mnt/ebs/config/graph-generator.xml" + newline
     return return_str
 
 def generateAnalystImage(bucket, date, time, searchCutOff, thresholdAccum, thresholdAgg, maxWalkDist, origin, tiffname) :
@@ -64,12 +65,11 @@ def generateAnalystImage(bucket, date, time, searchCutOff, thresholdAccum, thres
     return_str += " - export TIFFNAME=" + tiffname + newline
     return_str += " - mkdir /home/ec2-user/" + bucket + "/nyc" + newline
     return_str += " - mv /home/ec2-user/" + bucket + "/Graph.obj /home/ec2-user/" + bucket + "/nyc/Graph.obj" + newline
-    return_str += " - mkdir -p /mnt/ebs/otp/" + bucket + "/images" + newline
     return_str += " - /usr/bin/java -Xmx4096m " + \
         "-Ddir1=$DIR1 -Ddate=$DATE -Dtime=$TIME -DsearchCutOff=$SEARCHCUTOFF " + \
         "-DthresholdAccum=$THRESHOLDACCUM -DthresholdAgg=$THRESHOLDAGG " + \
         "-DmaxWalkDist=$MAXWALKDIST -Dorigin=$ORIGIN -Dtiffname=$TIFFNAME " + \
-        "-jar /mnt/ebs/OpenTripPlanner/opentripplanner-analyst/target/otp-analyst.jar /mnt/ebs/OpenTripPlanner/batchAnalystConfig.xml" + newline
+        "-jar /mnt/ebs/OpenTripPlanner/opentripplanner-analyst/target/otp-analyst.jar /mnt/ebs/config/batchAnalystConfig.xml" + newline
     return return_str
 
 def pullFromS3(bucket, file_set, useOriginalFiles=False) :
@@ -97,12 +97,13 @@ def uploadToS3(bucket, file_set, s3_conn) :
 
 def writeGraphToS3(bucket) :
     return_str = ""
-    return_str += " - /usr/bin/s3put -b " + bucket + " -p /mnt/ebs/otp/" + bucket + "/graphs /mnt/ebs/otp/" + bucket + "/graphs/Graph.obj" + newline
+    return_str += " - /usr/bin/s3put -b " + bucket + " -p /home/ec2-user/" + bucket + " /home/ec2-user/" + bucket + "/Graph.obj" + newline
     return return_str
 
-def writeAnalystImageToS3(bucket) :
+def writeAnalystImageToS3(bucket, tiffname) :
     return_str = ""
-    return_str += " - /usr/bin/s3put -b " + bucket + " -p /mnt/ebs/otp/" + bucket + "/images /mnt/ebs/otp/" + bucket + "/images/output.tiff" + newline
+    return_str += " - /usr/bin/s3put -b output_images -p /home/ec2-user/" + bucket + \
+        " /home/ec2-user/" + bucket + "/" + tiffname + ".tiff" + newline
     return return_str
 
 def getFileName (longFileName) :
